@@ -23,7 +23,12 @@ namespace TGC.MonoGame.TP
         private CityScene City { get; set; }
         private Model CarModel { get; set; }
         private Matrix CarWorld { get; set; }
+        private float ModelTranslation {get; set;}
         private FollowCamera FollowCamera { get; set; }
+        private Matrix CarWorldRotation { get; set; }
+        private float Rotation {get; set; }
+        private Vector3 CarPosition {get; set; }
+
 
 
         /// <summary>
@@ -78,6 +83,7 @@ namespace TGC.MonoGame.TP
             City = new CityScene(Content);
 
             // La carga de contenido debe ser realizada aca.
+            CarModel = Content.Load<Model>(ContentFolder3D + "scene/car");
 
             base.LoadContent();
         }
@@ -90,6 +96,9 @@ namespace TGC.MonoGame.TP
         {
             // Caputo el estado del teclado.
             var keyboardState = Keyboard.GetState();
+            //Tiempo recorrido desde que arrancó a correr el juego
+            var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
+
             if (keyboardState.IsKeyDown(Keys.Escape))
             {
                 // Salgo del juego.
@@ -97,7 +106,30 @@ namespace TGC.MonoGame.TP
             }
 
             // La logica debe ir aca.
+            //Movimiento del auto
+            if(keyboardState.IsKeyDown(Keys.W)){
+                CarPosition += CarWorld.Forward * 1000f * elapsedTime;
+            }
 
+            if(keyboardState.IsKeyDown(Keys.S)){
+                CarPosition -= CarWorld.Forward * 1000f * elapsedTime;
+            }
+
+            Vector3 origin = Vector3.Zero;
+
+            if(keyboardState.IsKeyDown(Keys.A)){    
+                Rotation += 2f * elapsedTime;
+            }
+
+            if(keyboardState.IsKeyDown(Keys.D)){
+                Rotation -= 2f * elapsedTime;
+            }
+
+
+            CarWorld = 
+                Matrix.CreateRotationY(Rotation)
+               * Matrix.CreateTranslation(CarPosition);
+            
             // Actualizo la camara, enviandole la matriz de mundo del auto.
             FollowCamera.Update(gameTime, CarWorld);
 
@@ -118,6 +150,7 @@ namespace TGC.MonoGame.TP
             City.Draw(gameTime, FollowCamera.View, FollowCamera.Projection);
 
             // El dibujo del auto debe ir aca.
+            CarModel.Draw(CarWorld, FollowCamera.View, FollowCamera.Projection);
 
             base.Draw(gameTime);
         }
